@@ -450,7 +450,11 @@ for i in {1..3}; do
   sleep 3
 done
 
-echo "[ERROR] ❌ 代理连接失败"
+# 代理连不通：不让整个 job 终止，降级为直连，交给 app.py 自己的登录结果 /
+# Telegram 通知去反映最终是否成功（而不是在这里静默失败、后面步骤全部被跳过）
+echo "[ERROR] ⚠️ 代理连接失败，已降级为直连模式（IS_PROXY=false）"
 echo "---- sing-box 日志 ----"
 cat sing-box.log
-exit 1
+pkill -f sing-box 2>/dev/null || true
+echo "IS_PROXY=false" >> $GITHUB_ENV
+exit 0
