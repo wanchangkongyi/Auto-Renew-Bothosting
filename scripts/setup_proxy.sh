@@ -20,7 +20,7 @@ if ! command -v jq &> /dev/null; then
 fi
 
 if command -v curl &>/dev/null; then
-  COMMAND="curl -so"
+  COMMAND="curl -sLo"
 elif command -v wget &>/dev/null; then
   COMMAND="wget -qO"
 else
@@ -46,7 +46,19 @@ case "${ARCH_RAW}" in
     *) echo "不支持的架构: ${ARCH_RAW}"; exit 1 ;;
 esac
 
-$COMMAND sing-box-${latest_version}-linux-${ARCH}.tar.gz "https://github.com/SagerNet/sing-box/releases/download/v${latest_version}/sing-box-${latest_version}-linux-${ARCH}.tar.gz"
+DOWNLOAD_URL="https://github.com/SagerNet/sing-box/releases/download/v${latest_version}/sing-box-${latest_version}-linux-${ARCH}.tar.gz"
+$COMMAND sing-box-${latest_version}-linux-${ARCH}.tar.gz "$DOWNLOAD_URL"
+
+# 校验下载结果，避免因重定向未跟随 / 下载中断等原因拿到无效文件，
+# 让 tar 报出难懂的 "unexpected end of file"
+if ! file "sing-box-${latest_version}-linux-${ARCH}.tar.gz" | grep -q "gzip compressed"; then
+  echo "[ERROR] 下载的文件不是有效的 gzip 包，可能是版本号/架构不对或下载被截断"
+  echo "[ERROR] 下载地址: $DOWNLOAD_URL"
+  echo "---- 文件内容预览 ----"
+  head -c 300 "sing-box-${latest_version}-linux-${ARCH}.tar.gz"
+  exit 1
+fi
+
 tar -xzf "sing-box-${latest_version}-linux-${ARCH}.tar.gz"
 mv "sing-box-${latest_version}-linux-${ARCH}/sing-box" ./
 rm -f "sing-box-${latest_version}-linux-${ARCH}.tar.gz"
