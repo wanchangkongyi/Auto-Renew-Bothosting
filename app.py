@@ -433,7 +433,7 @@ def main():
             send_telegram_message(format_notification("❌ 登录失败", error=error_msg))
             return
 
-        if _LOGIN_METHOD == "Discord OAuth":
+        if _LOGIN_METHOD == "Discord Token":
             print("ℹ️ 本次使用 Discord OAuth 登录，新的 SESSION_TOKEN 将自动更新到 Secrets")
 
         # 提取当前到期日期
